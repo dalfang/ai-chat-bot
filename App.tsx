@@ -7,8 +7,13 @@ import {
   TextInput,
   Button,
   FlatList,
+  Linking,
+  Pressable,
 } from "react-native";
 import supabase from "./src/lib/supabase";
+import Feather from "@expo/vector-icons/Feather";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import Markdown from "react-native-markdown-display";
 
 export default function App() {
   const [query, setQuery] = useState("");
@@ -42,29 +47,58 @@ export default function App() {
               { marginLeft: item.isUser ? 50 : 0 },
             ]}
           >
-            <Text>{item.message}</Text>
-            <Text style={{ fontWeight: "bold", margintop: 20 }}>
-              Read more:
-            </Text>
-            {item.docs?.map((doc) => (
-              <Text style={styles.link}>{doc.title}</Text>
-            ))}
+            {/* Ensure message is a string */}
+            <Markdown>{item.message || "No message available"}</Markdown>
+
+            {/* Render docs section only if docs exist */}
+            {item.docs && (
+              <>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                    marginTop: 20,
+                    color: "dimgray",
+                  }}
+                >
+                  Read more:
+                </Text>
+                {item.docs.map((doc, index) => (
+                  <Pressable
+                    key={index} // Add a key for the list
+                    style={styles.linkContainer}
+                    onPress={() => Linking.openURL(doc.url)}
+                  >
+                    <Text style={styles.link}>{doc.title}</Text>
+                    <Feather name="external-link" size={18} color="royalblue" />
+                  </Pressable>
+                ))}
+              </>
+            )}
           </View>
         )}
       />
-      <TextInput
-        placeholder="prompt"
-        value={query}
-        onChangeText={setQuery}
-        style={{
-          marginVertical: 10,
-          padding: 10,
-          borderColor: "gainsboro",
-          borderWidth: 1,
-          borderRadius: 5,
-        }}
-      />
-      <Button title="Run" onPress={runPrompt} />
+
+      <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
+        <TextInput
+          placeholder="prompt"
+          value={query}
+          onChangeText={setQuery}
+          style={{
+            marginVertical: 15,
+            padding: 15,
+            borderColor: "gainsboro",
+            borderWidth: 1,
+            borderRadius: 50,
+            flex: 1,
+          }}
+        />
+        <FontAwesome5
+          onPress={runPrompt}
+          name="arrow-circle-up"
+          size={30}
+          color="gray"
+        />
+      </View>
 
       <StatusBar style="auto" />
     </View>
@@ -82,5 +116,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#F7F7F7",
     padding: 10,
     borderRadius: 5,
+  },
+  linkContainer: {
+    borderColor: "gray",
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 5,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  link: {
+    fontWeight: "600",
+    color: "royalblue",
   },
 });

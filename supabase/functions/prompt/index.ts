@@ -3,33 +3,39 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-/// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
-import OpenAI from "https://deno.land/x/openai@v4.47.1/mod.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import fm from "npm:front-matter@4.0.2";
+import * as dotenv from "https://deno.land/x/dotenv/mod.ts";
+dotenv.config();
 
-// On github: https://raw.githubusercontent.com/expo/expo/main/docs/pages/get-started/start-developing.mdx
-// Public page: https://docs.expo.dev/get-started/start-developing
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+
+console.log("Hello from Functions!");
+
+import OpenAI from "https://deno.land/x/openai@v4.20.1/mod.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+import fm from "npm:front-matter@4.0.2";
+// Instantiate the OpenAI client with the API key
+const openai = new OpenAI({
+  apiKey: Deno.env.get("OPENAI_API_KEY"),
+});
+
+// Retrieve docs
 export const parseExpoDocs = async (slug: string) => {
-  const url =
-    `https://raw.githubusercontent.com/expo/expo/main/docs/pages/${slug}.mdx`;
+  const url = `https://raw.githubusercontent.com/expo/expo/main/docs/pages/${slug}.mdx`;
   const response = await fetch(url);
   const content = await response.text();
-
   const data = fm(content);
 
+  //console.log(`Parsed front matter for ${slug}:`, data.attributes); // Debug log for parsed front matter
   return data;
 };
 
-const openai = new OpenAI();
-
 export const generateEmbedding = async (input: string) => {
-  // generate vector
   const embedding = await openai.embeddings.create({
-    model: "text-embedding-3-small",
+    model: "text-embedding-ada-002",
     input,
     encoding_format: "float",
   });
+
   const vector = embedding.data[0].embedding;
   return vector;
 };
@@ -44,16 +50,17 @@ export const completion = async (prompt: string) => {
 
 const buildFullPrompt = (query: string, docsContext: string) => {
   const prompt_boilerplate =
-    "Answer the question posed in the user query section using the provided context";
+    "Answer the question posted in user query section using the provided context";
   const user_query_boilerplate = "USER QUERY: ";
   const document_context_boilerplate = "CONTEXT: ";
   const final_answer_boilerplate = "Final Answer: ";
 
   const filled_prompt_template = `
-    ${prompt_boilerplate}
-    ${user_query_boilerplate} ${query}
-    ${document_context_boilerplate} ${docsContext} 
-    ${final_answer_boilerplate}`;
+  ${prompt_boilerplate}
+  ${user_query_boilerplate} ${query}
+  ${document_context_boilerplate} ${docsContext} 
+  ${final_answer_boilerplate}
+  `;
   return filled_prompt_template;
 };
 
