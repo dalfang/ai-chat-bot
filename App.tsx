@@ -5,18 +5,22 @@ import supabase from "./src/lib/supabase";
 
 export default function App() {
   const [query, setQuery] = useState("");
+  const [messages, setMessages] = useState([]);
 
   const runPrompt = async () => {
+    setMessages((current) => [{ message: query, isUser: true }, ...current]);
+    setQuery("");
     const { data, error } = await supabase.functions.invoke("prompt", {
-      body: { query, name: "dalin" },
+      body: { query },
     });
-
     if (error) {
+      console.log("Failed");
       console.log(error);
     }
-    console.log(data);
+    setMessages((current) => [{ ...data }, ...current]);
   };
 
+  console.log(messages);
   return (
     <View style={styles.container}>
       <TextInput
