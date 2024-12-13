@@ -65,6 +65,7 @@ const buildFullPrompt = (query: string, docsContext: string) => {
 };
 
 Deno.serve(async (req) => {
+  
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_ANON_KEY") ?? "",
@@ -100,10 +101,14 @@ Deno.serve(async (req) => {
 
   return new Response(
     JSON.stringify(data),
-    { headers: { "Content-Type": "application/json" } },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*", 
+      }
+    },
   );
 });
-
 /* To invoke locally:
 
   1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)

@@ -9,6 +9,9 @@ import {
   FlatList,
   Linking,
   Pressable,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import supabase from "./src/lib/supabase";
 import Feather from "@expo/vector-icons/Feather";
@@ -35,7 +38,10 @@ export default function App() {
   console.log(messages);
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <FlatList
         data={messages}
         inverted
@@ -47,10 +53,8 @@ export default function App() {
               { marginLeft: item.isUser ? 50 : 0 },
             ]}
           >
-            {/* Ensure message is a string */}
             <Markdown>{item.message || "No message available"}</Markdown>
 
-            {/* Render docs section only if docs exist */}
             {item.docs && (
               <>
                 <Text
@@ -101,7 +105,7 @@ export default function App() {
       </View>
 
       <StatusBar style="auto" />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -109,7 +113,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    justifyContent: "center",
     padding: 20,
   },
   messageContainer: {
